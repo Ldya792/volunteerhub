@@ -1,0 +1,19 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
+crash.log
+
+# Google Cloud credentials (never commit keys)
+*credentials*.json
+*-key.json
+service-account*.json
+
+# Node.js
+node_modules/
+.env
+
+# macOS
+.DS_Store
