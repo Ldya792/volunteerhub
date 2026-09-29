@@ -15,3 +15,9 @@ variable "zone" {
   type        = string
   default     = "us-east1-b"
 }
+
+variable "subnet_cidr" {
+  description = "Private IP range for the web subnet"
+  type        = string
+  default     = "10.10.1.0/24"
+}
