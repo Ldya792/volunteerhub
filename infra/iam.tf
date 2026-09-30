@@ -17,3 +17,26 @@ resource "google_project_iam_member" "vm_metric_writer" {
   member  = "serviceAccount:${google_service_account.vm.email}"
 }
 
+# ---------- Data access for the web VMs (least privilege) ----------
+
+# Firestore: read and write documents (project level is the only option for Firestore)
+resource "google_project_iam_member" "vm_firestore_user" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.vm.email}"
+}
+
+# Cloud Storage: read and write objects in the flyer bucket ONLY
+resource "google_storage_bucket_iam_member" "vm_flyers" {
+  bucket = google_storage_bucket.flyers.name
+  role   = "roles/storage.objectUser"
+  member = "serviceAccount:${google_service_account.vm.email}"
+}
+
+# Secret Manager: read the session secret ONLY
+resource "google_secret_manager_secret_iam_member" "vm_session_secret" {
+  secret_id = google_secret_manager_secret.session.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.vm.email}"
+}
+
