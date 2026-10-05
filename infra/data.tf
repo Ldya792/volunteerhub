@@ -34,5 +34,18 @@ resource "google_secret_manager_secret" "session" {
   }
 }
 
+# ---------- Secret Manager: container for the admin password ----------
+resource "google_secret_manager_secret" "admin_password" {
+  secret_id = "volunteerhub-admin-password"
+
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
+}
+
 
 
