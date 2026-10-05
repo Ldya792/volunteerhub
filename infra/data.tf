@@ -49,3 +49,26 @@ resource "google_secret_manager_secret" "admin_password" {
 
 
 
+
+# Private bucket for application releases (zip files the VMs download at boot)
+resource "google_storage_bucket" "releases" {
+  name                        = "${var.project_id}-releases"
+  location                    = var.region
+  storage_class               = "STANDARD"
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+  force_destroy               = true
+
+  versioning {
+    enabled = true
+  }
+
+  lifecycle_rule {
+    condition {
+      num_newer_versions = 5
+    }
+    action {
+      type = "Delete"
+    }
+  }
+}
