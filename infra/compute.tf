@@ -77,7 +77,17 @@ resource "google_compute_instance_group_manager" "web" {
 
   auto_healing_policies {
     health_check      = google_compute_health_check.web.id
-    initial_delay_sec = 300 # give the startup script 5 minutes to install Nginx
+    initial_delay_sec = 300 # give the startup script 5 minutes to install Node.js and the app
+  }
+
+  # Rolling update: remove 1 old VM, then create its replacement.
+  # Never more than 2 VMs (matches the approved design).
+  update_policy {
+    type                  = "PROACTIVE"
+    minimal_action        = "REPLACE"
+    max_surge_fixed       = 0
+    max_unavailable_fixed = 1
+    replacement_method    = "RECREATE"
   }
 }
 

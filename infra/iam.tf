@@ -40,3 +40,18 @@ resource "google_secret_manager_secret_iam_member" "vm_session_secret" {
   member    = "serviceAccount:${google_service_account.vm.email}"
 }
 
+# Secret Manager: read the admin password ONLY
+resource "google_secret_manager_secret_iam_member" "vm_admin_password" {
+  secret_id = google_secret_manager_secret.admin_password.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.vm.email}"
+}
+
+
+
+# VMs can DOWNLOAD releases but never change them
+resource "google_storage_bucket_iam_member" "vm_releases" {
+  bucket = google_storage_bucket.releases.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.vm.email}"
+}

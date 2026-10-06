@@ -1,0 +1,21 @@
+{
+  "name": "volunteerhub",
+  "version": "1.0.0",
+  "description": "Volunteer event sign-up website on Google Cloud",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^9.3.1",
+    "@google-cloud/secret-manager": "^7.1.1",
+    "@google-cloud/storage": "^8.2.0",
+    "cookie-session": "^2.1.1",
+    "express": "^5.2.1",
+    "multer": "^2.4.0"
+  }
+}
