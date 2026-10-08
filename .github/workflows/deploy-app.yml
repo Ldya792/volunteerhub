@@ -1,0 +1,64 @@
+name: Deploy app
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - ".github/workflows/deploy-app.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-app
+  cancel-in-progress: false
+
+env:
+  RELEASE_BUCKET: volunteerhub-lw-2026-releases
+  MIG: volunteerhub-web-mig
+  ZONE: us-east1-b
+  SITE_URL: http://136.81.68.39
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+
+      - name: Log in to Google Cloud (keyless, main-only account)
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.TF_APPLY_SA }}
+
+      - name: Install gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Package and upload the release
+        run: |
+          VERSION=$(git rev-parse --short HEAD)
+          echo "Releasing version $VERSION"
+          git archive --format=tar.gz -o release.tar.gz HEAD:app
+          gcloud storage cp release.tar.gz "gs://$RELEASE_BUCKET/releases/volunteerhub-$VERSION.tar.gz"
+          gcloud storage cp "gs://$RELEASE_BUCKET/releases/volunteerhub-$VERSION.tar.gz" "gs://$RELEASE_BUCKET/current.tar.gz"
+
+      - name: Rolling replace (one VM at a time, never more than 2)
+        run: |
+          gcloud compute instance-groups managed rolling-action replace "$MIG" \
+            --zone "$ZONE" --max-surge=0 --max-unavailable=1 --replacement-method=recreate
+
+      - name: Wait until both VMs are replaced and stable
+        run: |
+          gcloud compute instance-groups managed wait-until "$MIG" \
+            --stable --zone "$ZONE" --timeout=1500
+
+      - name: Smoke test through the load balancer
+        run: |
+          for i in $(seq 1 10); do
+            curl -sf "$SITE_URL/health" > /dev/null
+            curl -s "$SITE_URL/" | grep -o "Served by [^ <·]*"
+          done
