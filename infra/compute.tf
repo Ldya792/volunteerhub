@@ -1,8 +1,4 @@
-# ---------- Latest Ubuntu 24.04 LTS image ----------
-data "google_compute_image" "ubuntu" {
-  family  = "ubuntu-2404-lts-amd64"
-  project = "ubuntu-os-cloud"
-}
+# ---------- Ubuntu 24.04 LTS image (pinned; update deliberately in a PR) ----------
 
 # ---------- Instance template: the blueprint for each web VM ----------
 resource "google_compute_instance_template" "web" {
@@ -11,7 +7,7 @@ resource "google_compute_instance_template" "web" {
   tags         = ["web"]    # matches the firewall rules
 
   disk {
-    source_image = data.google_compute_image.ubuntu.self_link
+    source_image = "projects/ubuntu-os-cloud/global/images/ubuntu-2404-noble-amd64-v20260918"
     disk_size_gb = 10
     disk_type    = "pd-balanced"
     boot         = true
@@ -88,6 +84,12 @@ resource "google_compute_instance_group_manager" "web" {
     max_surge_fixed       = 0
     max_unavailable_fixed = 1
     replacement_method    = "RECREATE"
+  }
+
+  # The deploy pipeline (gcloud rolling-action replace) sets the version name.
+  # Terraform must not undo it, or the VMs would be rebuilt again.
+  lifecycle {
+    ignore_changes = [version[0].name]
   }
 }
 
