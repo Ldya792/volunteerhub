@@ -72,7 +72,7 @@ function page(title, body) {
   <footer class="site-footer">
     <div class="container">
       <p>VolunteerHub connects volunteers with local community events.</p>
-      <p class="server">Served by ${escapeHtml(SERVER_NAME)} · Hosted on Google Cloud</p>
+      <p class="server">Served by ${escapeHtml(SERVER_NAME)} · Hosted on Google Cloud · Deployed by GitHub Actions</p>
     </div>
   </footer>
 </body>
