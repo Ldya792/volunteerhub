@@ -7,11 +7,12 @@ resource "google_compute_instance_template" "web" {
   tags         = ["web"]    # matches the firewall rules
 
   disk {
-    source_image = "projects/ubuntu-os-cloud/global/images/ubuntu-2404-noble-amd64-v20260918"
-    disk_size_gb = 10
-    disk_type    = "pd-balanced"
-    boot         = true
-    auto_delete  = true
+    source_image      = "projects/ubuntu-os-cloud/global/images/ubuntu-2404-noble-amd64-v20260918"
+    disk_size_gb      = 10
+    disk_type         = "pd-balanced"
+    boot              = true
+    auto_delete       = true
+    resource_policies = [google_compute_resource_policy.daily_snapshots.id]
   }
 
   # No access_config block = no public IP address
